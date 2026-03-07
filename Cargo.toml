@@ -1,0 +1,23 @@
+[package]
+name = "mimir-tracker"
+version = "0.1.0"
+edition = "2021"
+authors = ["Revertron"]
+description = "Yggdrasil tracker using ygg_stream datagrams and streams"
+license = "MPL-2.0"
+
+[dependencies]
+ygg_stream = { path = "../ygg_stream" }
+ironwood = { path = "../../Yggdrasil-ng/crates/ironwood" }
+yggdrasil = { path = "../../Yggdrasil-ng/crates/yggdrasil" }
+tokio = { version = "1", features = ["full"] }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+rand = "0.8"
+getopts = "0.2"
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
+tokio-util = { version = "0.7", features = ["rt"] }
+serde-big-array = "0.5"
+hex = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
