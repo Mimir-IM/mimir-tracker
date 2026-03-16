@@ -1,6 +1,7 @@
 # mimir-tracker
 
-A lightweight tracker for [Yggdrasil](https://yggdrasil-network.github.io/) overlay network nodes. It allows clients to announce their network addresses and discover peers using Ed25519-signed records over Yggdrasil datagrams and streams.
+A lightweight tracker for [Yggdrasil](https://yggdrasil-network.github.io/) overlay network nodes.
+It allows clients to announce their network addresses and discover peers using Ed25519-signed records over Yggdrasil datagrams and streams.
 
 ## Features
 
