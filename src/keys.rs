@@ -8,8 +8,26 @@ use crate::protocol::KEY_FILE;
 
 pub fn load_or_gen_key() -> SigningKey {
     if let Ok(data) = fs::read(KEY_FILE) {
-        if data.len() == 32 {
-            let seed: [u8; 32] = data.try_into().unwrap();
+        let seed: Option<[u8; 32]> = if data.len() == 32 {
+            Some(data.try_into().unwrap())
+        } else if data.len() == 64 {
+            // Try to parse as hex-encoded seed
+            let text = String::from_utf8_lossy(&data);
+            let text = text.trim();
+            hex::decode(text).ok()
+                .and_then(|bytes| <[u8; 32]>::try_from(bytes).ok())
+        } else {
+            // Handle hex with possible trailing newline/whitespace
+            let text = String::from_utf8_lossy(&data);
+            let text = text.trim();
+            if text.len() == 64 {
+                hex::decode(text).ok()
+                    .and_then(|bytes| <[u8; 32]>::try_from(bytes).ok())
+            } else {
+                None
+            }
+        };
+        if let Some(seed) = seed {
             let sk = SigningKey::from_bytes(&seed);
             info!("Loaded key from {}, public: {}", KEY_FILE, hex::encode(sk.verifying_key().as_bytes()));
             return sk;
