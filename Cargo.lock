@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "mimir-tracker"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "bincode",
  "ed25519-dalek",
@@ -2392,8 +2392,8 @@ dependencies = [
 
 [[package]]
 name = "ygg_stream"
-version = "0.1.2"
-source = "git+https://github.com/Revertron/ygg_stream?tag=v0.1.2#c6fd8de580c2d47ed4804481b0ad2679f7e1117f"
+version = "0.1.4"
+source = "git+https://github.com/Revertron/ygg_stream?tag=v0.1.4#494cdc320a1ada566db3a89f5b9d3ddb36cf5c27"
 dependencies = [
  "bytes",
  "ed25519-dalek",
