@@ -6,6 +6,7 @@ pub const PORT_TRACKER: u16 = 69;
 
 pub const CMD_ANNOUNCE: u8 = 0;
 pub const CMD_GET_ADDRS: u8 = 1;
+pub const CMD_PING: u8 = 2;
 pub const CMD_SYNC_DATA: u8 = 10;
 pub const CMD_SYNC_PING: u8 = 20;
 

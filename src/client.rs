@@ -56,6 +56,9 @@ async fn handle_v1_datagram(state: &TrackerState, handle: &ConnectHandle, sender
         CMD_GET_ADDRS => {
             handle_get_addrs_v1(state, handle, sender, nonce, user_pub).await;
         }
+        CMD_PING => {
+            handle_ping(handle, sender, nonce).await;
+        }
         _ => {}
     }
 }
@@ -130,6 +133,9 @@ async fn handle_v2_datagram(state: &TrackerState, handle: &ConnectHandle, sender
         }
         CMD_GET_ADDRS => {
             handle_get_addrs_v2(state, handle, sender, nonce, tlv_payload).await;
+        }
+        CMD_PING => {
+            handle_ping(handle, sender, nonce).await;
         }
         _ => {}
     }
@@ -234,6 +240,17 @@ async fn handle_get_addrs_v2(state: &TrackerState, handle: &ConnectHandle, sende
     if let Err(e) = handle.send_datagram(sender, PORT_TRACKER, resp).await {
         warn!("Failed to send V2 getAddrs response: {}", e);
     }
+}
+
+// ── Ping (route priming) ─────────────────────────────────────────────────
+
+/// Lightweight echo — lets clients confirm the Yggdrasil route is warm
+/// before sending a real request.  No state changes, minimal response.
+async fn handle_ping(handle: &ConnectHandle, sender: &Addr, nonce: u32) {
+    let mut resp = [0u8; 5];
+    resp[0..4].copy_from_slice(&nonce.to_be_bytes());
+    resp[4] = CMD_PING;
+    let _ = handle.send_datagram(sender, PORT_TRACKER, resp.to_vec()).await;
 }
 
 // ── Shared logic ─────────────────────────────────────────────────────────────

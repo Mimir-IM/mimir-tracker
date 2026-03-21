@@ -15,11 +15,7 @@ use crate::tlv::*;
 
 // ── Sync acceptor (called from main) ─────────────────────────────────────────
 
-pub async fn accept_sync_connections(
-    state: Arc<TrackerState>,
-    mut stream_listener: ygg_stream::Listener,
-    cancel: CancellationToken,
-) {
+pub async fn accept_sync_connections(state: Arc<TrackerState>, mut stream_listener: ygg_stream::Listener, cancel: CancellationToken) {
     loop {
         tokio::select! {
             result = stream_listener.accept() => {

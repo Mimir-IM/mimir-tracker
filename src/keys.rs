@@ -28,16 +28,16 @@ pub fn load_or_gen_key() -> SigningKey {
             }
         };
         if let Some(seed) = seed {
-            let sk = SigningKey::from_bytes(&seed);
-            info!("Loaded key from {}, public: {}", KEY_FILE, hex::encode(sk.verifying_key().as_bytes()));
-            return sk;
+            let key = SigningKey::from_bytes(&seed);
+            info!("Loaded key from {}, public: {}", KEY_FILE, hex::encode(key.verifying_key().as_bytes()));
+            return key;
         }
     }
 
-    let sk = SigningKey::generate(&mut OsRng);
-    if let Err(e) = fs::write(KEY_FILE, sk.to_bytes()) {
+    let key = SigningKey::generate(&mut OsRng);
+    if let Err(e) = fs::write(KEY_FILE, key.to_bytes()) {
         error!("Failed to save key: {}", e);
     }
-    info!("Generated new key (saved to {}), public: {}", KEY_FILE, hex::encode(sk.verifying_key().as_bytes()));
-    sk
+    info!("Generated new key (saved to {}), public: {}", KEY_FILE, hex::encode(key.verifying_key().as_bytes()));
+    key
 }
