@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
-use ironwood::Addr;
+use ygg_stream::Addr;
 use tokio_util::sync::CancellationToken;
 use tracing::{info, warn};
 use ygg_stream::{ConnectHandle, DatagramListener};

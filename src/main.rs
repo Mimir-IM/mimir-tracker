@@ -8,15 +8,12 @@ mod tlv;
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Duration;
 
 use ed25519_dalek::SigningKey;
 use tokio::sync::broadcast;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
-use ygg_stream::StreamManager;
-use yggdrasil::config::Config;
-use yggdrasil::core::Core;
+use ygg_stream::AsyncNode;
 
 use crate::protocol::*;
 use crate::state::*;
@@ -85,18 +82,12 @@ async fn main() {
     });
 
     // Start Yggdrasil node
-    let mut config = Config::default();
-    config.peers = peers;
-    let core = Core::new(signing_key.clone(), config);
-    core.init_links().await;
-    core.start().await;
-    tokio::time::sleep(Duration::from_secs(1)).await;
+    let node = AsyncNode::new_with_key(signing_key.as_bytes(), peers)
+        .await
+        .expect("Failed to start Yggdrasil node");
+    let handle = node.handle();
 
     info!("Tracker started, public key: {}", hex::encode(pub_key_bytes));
-
-    // Create stream manager and split
-    let manager = StreamManager::new(core.packet_conn());
-    let handle = manager.split();
 
     // Register listeners
     let dg_listener = handle.listen_datagram(PORT_TRACKER).await;

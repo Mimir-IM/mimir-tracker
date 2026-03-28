@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant, SystemTime};
 
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
-use ironwood::Addr;
+use ygg_stream::Addr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::broadcast;
 use tokio_util::sync::CancellationToken;
@@ -15,7 +15,7 @@ use crate::tlv::*;
 
 // ── Sync acceptor (called from main) ─────────────────────────────────────────
 
-pub async fn accept_sync_connections(state: Arc<TrackerState>, mut stream_listener: ygg_stream::Listener, cancel: CancellationToken) {
+pub async fn accept_sync_connections(state: Arc<TrackerState>, mut stream_listener: ygg_stream::TcpListener, cancel: CancellationToken) {
     loop {
         tokio::select! {
             result = stream_listener.accept() => {
@@ -79,22 +79,11 @@ pub async fn run_sync_peer(state: Arc<TrackerState>, handle: ConnectHandle, peer
             }
         }
 
-        // Connect and open stream
-        let connection = match handle.connect(peer_addr).await {
-            Ok(c) => c,
-            Err(e) => {
-                warn!("Sync connect to {}… failed: {}", &peer_hex[..8.min(peer_hex.len())], e);
-                tokio::select! {
-                    _ = tokio::time::sleep(backoff) => continue,
-                    _ = cancel.cancelled() => return,
-                }
-            }
-        };
-
-        let mut stream = match connection.open_stream(PORT_TRACKER).await {
+        // Connect
+        let mut stream = match handle.connect(peer_addr, PORT_TRACKER).await {
             Ok(s) => s,
             Err(e) => {
-                warn!("Sync open_stream to {}… failed: {}", &peer_hex[..8.min(peer_hex.len())], e);
+                warn!("Sync connect to {}… failed: {}", &peer_hex[..8.min(peer_hex.len())], e);
                 tokio::select! {
                     _ = tokio::time::sleep(backoff) => continue,
                     _ = cancel.cancelled() => return,
@@ -128,7 +117,7 @@ pub async fn run_sync_peer(state: Arc<TrackerState>, handle: ConnectHandle, peer
 
 // ── Sync connection loop ─────────────────────────────────────────────────────
 
-async fn run_sync_connection(state: &TrackerState, stream: &mut ygg_stream::Stream, remote_pub: &[u8; 32], cancel: CancellationToken) {
+async fn run_sync_connection(state: &TrackerState, stream: &mut ygg_stream::TcpConnection, remote_pub: &[u8; 32], cancel: CancellationToken) {
     let mut sync_rx = state.sync_tx.subscribe();
     let mut last_ping = Instant::now();
 
@@ -214,7 +203,7 @@ async fn run_sync_connection(state: &TrackerState, stream: &mut ygg_stream::Stre
 
 // ── TLV sync read/write ─────────────────────────────────────────────────────
 
-async fn handle_sync_data(state: &TrackerState, stream: &mut ygg_stream::Stream) -> Result<(), Box<dyn std::error::Error>> {
+async fn handle_sync_data(state: &TrackerState, stream: &mut ygg_stream::TcpConnection) -> Result<(), Box<dyn std::error::Error>> {
     // [payload_len:4 BE][TLV payload]
     let mut len_buf = [0u8; 4];
     stream.read_exact(&mut len_buf).await?;
@@ -251,7 +240,7 @@ async fn handle_sync_data(state: &TrackerState, stream: &mut ygg_stream::Stream)
     process_sync_record(state, hop, key, node_pub, signature, priority, client_id, ttl_secs, prev_ttl).await
 }
 
-async fn write_sync_data(stream: &mut ygg_stream::Stream, item: &SyncItem) -> Result<(), std::io::Error> {
+async fn write_sync_data(stream: &mut ygg_stream::TcpConnection, item: &SyncItem) -> Result<(), std::io::Error> {
     let ttl = item.data.expires
         .duration_since(SystemTime::now())
         .unwrap_or_default()
