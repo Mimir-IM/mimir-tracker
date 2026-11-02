@@ -7,7 +7,7 @@ description = "Yggdrasil tracker using ygg_stream datagrams and streams"
 license = "MPL-2.0"
 
 [dependencies]
-ygg_stream = { git = "https://github.com/Revertron/ygg_stream", tag = "v0.2.7" }
+ygg_stream = { git = "https://github.com/Revertron/ygg_stream", tag = "v0.2.8" }
 tokio = { version = "1", features = ["full"] }
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 rand = "0.8"
